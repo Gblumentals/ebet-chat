@@ -10,6 +10,7 @@ export class ChatServer {
   public static readonly PORT: number = 8080;
   private _app: express.Application;
   private server: Server;
+  private ioOptions: Object;
   private io: IOServer;
   private port: string | number;
 
@@ -24,7 +25,15 @@ export class ChatServer {
   }
 
   private initSocket (): void {
-    this.io = new IOServer(this.server);
+    this.ioOptions = {
+      cors: {
+        origin: "http://localhost:4200",
+        methods: ["GET", "POST"],
+        // auth headers here
+      }
+    }
+
+    this.io = new IOServer(this.server, this.ioOptions);
   }
 
   private listen (): void {
@@ -34,6 +43,7 @@ export class ChatServer {
 
     this.io.on(ChatEvent.CONNECT, (socket: Socket) => {
       console.log('Connected client on port %s.', this.port);
+
 
       socket.on(ChatEvent.MESSAGE, (m: ChatMessage) => {
         console.log('[server](message): %s', JSON.stringify(m));
